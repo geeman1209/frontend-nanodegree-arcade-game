@@ -1,4 +1,10 @@
 "use strict"
+
+var Score = function  drawScore() {
+    ctx.font = "italic bold 16px Roboto";
+    ctx.fillStyle = "#0000";
+    ctx.fillText("score: "+ player.score, 1, 100);
+}
 // Enemies our player must avoid
 
 var Enemy = function(x, y) {
@@ -42,6 +48,9 @@ function findEnemies() {
 Enemy.prototype.playerCollision = function(player) {
     if (player.x < this.x + 65 && player.x + 65 > this.x && player.y < this.y + 30 && 30 + player.y > this.y) {
         player.reset();
+        player.score -= 10;
+        console.log(player.score);
+        document.getElementById("score").innerHTML = player.score;
     }
 }
 
@@ -80,7 +89,7 @@ Enemy.prototype.detectCollision = function() {
         if (bug1.x < bug2.x + 100 && bug1.x + 100 > bug2.x && bug1.y < bug2.y + 90 && bug1.y + 90 > bug2.y) {
 
             bug1.wait = true;
-            bug2.speed = bug1.speed + 20;
+            bug2.speed = bug1.speed + 5;
 
         }
     });
@@ -103,13 +112,15 @@ Enemy.prototype.render = function() {
 var Player = function() {
     this.x = 202;
     this.y = 405;
+    
     this.sprite = "images/char-boy.png";
+    this.score = 0;
 }
 
 Player.prototype.update = function() {
     this.x = this.x;
     this.y = this.y;
-
+    
     if (this.y < 68) {
         this.reset();
     }
@@ -168,6 +179,44 @@ Player.prototype.handleInput = function(keyInput) {
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
+
+var Gem = function() {
+    this.x = 202;
+    this.y = 305;
+    this.sprite = 'images/Gem Blue.png';
+}
+
+Gem.prototype.randomizer = function() {
+    var random = function(low, high) {
+        var range = high - low + 1;
+        return Math.floor(Math.random() * range) + low;
+    };
+    var blocWidth = 101, blocHeight = 75;
+    this.x = blocWidth * random(0, 4);
+    this.y = blocHeight * random(1,3);
+}
+
+Gem.prototype.update = function() {
+    this.collision(); 
+}
+
+Gem.prototype.collision = function() {
+    if (player.x < this.x + 65 && player.x + 65 > this.x && player.y < this.y + 30 && 30 + player.y > this.y) {
+      this.randomizer();
+      var newScore = [];
+      
+      player.score += 10;
+      document.getElementById("score").innerHTML = player.score;
+   
+    };
+}
+
+Gem.prototype.render = function() {
+    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+}
+
+
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
@@ -183,6 +232,8 @@ allEnemies.push(new Enemy(-120, 65));
 
 
 var player = new Player();
+
+var gem = new Gem();
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
