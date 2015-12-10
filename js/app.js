@@ -1,26 +1,20 @@
 "use strict"
 
-var Score = function  drawScore() {
-    ctx.font = "italic bold 16px Roboto";
-    ctx.fillStyle = "#0000";
-    ctx.fillText("score: "+ player.score, 1, 100);
-}
+
 // Enemies our player must avoid
 
 var Enemy = function(x, y) {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
+    //Sets the bug speed and locates the bug sprite
     this.x = x;
     this.y = y;
     this.speed = Math.floor(Math.random() * 480 + 1);
     this.sprite = 'images/enemy-bug.png';
 };
 
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
+// Updates the bug's position along the x and y axis 
+
+// Added two separate collision functions one 
+// between the bugs and one between the bugs and player.
 Enemy.prototype.update = function(dt) {
     this.detectCollision();
     this.playerCollision(player);
@@ -34,35 +28,27 @@ Enemy.prototype.update = function(dt) {
 
 };
 
-function findEnemies() {
-    var bugBad = [];
-    for (var i = 0; i < allEnemies.length; i++) {
-        for (var k = i + 1; k < allEnemies.length; k++) {
-            var helparr = [allEnemies[i], allEnemies[j]];
-            bugBad.push(helparr);
-        }
-    }
-    return bugBad;
-}
-
+//Resets player position after colliding with the bugs
+//The player loses ten points which is then reflected on the page
 Enemy.prototype.playerCollision = function(player) {
     if (player.x < this.x + 65 && player.x + 65 > this.x && player.y < this.y + 30 && 30 + player.y > this.y) {
         player.reset();
         player.score -= 10;
-        console.log(player.score);
         document.getElementById("score").innerHTML = player.score;
     }
 }
-
+//Creates a function that activates the wait property based on a boolean 
 function setPause(bool) {
     for (var i = 0; i < allEnemies.length; i++) {
         allEnemies[i].wait = bool;
     }
 }
 
+//Creates the function that prevents the bugs from overlapping
 Enemy.prototype.detectCollision = function() {
     setPause(false);
 
+//finds the pair of enemy bugs and pushes them into an array
     for (var i = 0; i < allEnemies.length; i++) {
         for (var k = i + 1; k < allEnemies.length; k++) {
             var bugBad = [];
@@ -76,7 +62,8 @@ Enemy.prototype.detectCollision = function() {
         var bug1 = pair[0];
         var bug2 = pair[1];
 
-
+//Makes sure bug2 is always ahead of bug1 by making bug2 take the place of bug1
+//if it is behind bug1
         if (bug2.x < bug1.x) {
             var temp;
             temp = bug1;
@@ -85,10 +72,12 @@ Enemy.prototype.detectCollision = function() {
         }
 
 
-
+//Determines the distance between pair of bugs before it turns setPause to true
         if (bug1.x < bug2.x + 100 && bug1.x + 100 > bug2.x && bug1.y < bug2.y + 90 && bug1.y + 90 > bug2.y) {
 
             bug1.wait = true;
+
+            //Gives bug2 a slight boost of speed 
             bug2.speed = bug1.speed + 5;
 
         }
@@ -97,18 +86,12 @@ Enemy.prototype.detectCollision = function() {
 };
 
 
-// You should multiply any movement by the dt parameter
-// which will ensure the game runs at the same speed for
-// all computers.
-
-// Draw the enemy on the screen, required method for game
+//Generates the bug sprite 
 Enemy.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+//Creates the Player class, setting an origin point and default score
 var Player = function() {
     this.x = 202;
     this.y = 405;
@@ -117,21 +100,22 @@ var Player = function() {
     this.score = 0;
 }
 
-Player.prototype.update = function() {
-    this.x = this.x;
-    this.y = this.y;
-    
+//Once player moves past the water the position is reset
+Player.prototype.update = function() {  
     if (this.y < 68) {
         this.reset();
     }
 }
 
+//Resets the player back to the origin point 
 Player.prototype.reset = function() {
     this.x = 202;
     this.y = 405;
 }
 
-
+//Function that controls the players movements based on which
+//arrow key pressed. It also creates boundaries for player movement
+//this way the player will not move beyond the board. 
 Player.prototype.handleInput = function(keyInput) {
     switch (keyInput) {
         case 'up':
@@ -176,9 +160,13 @@ Player.prototype.handleInput = function(keyInput) {
 
 }
 
+//Places the player sprite on the canvas
 Player.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 };
+
+//Gives everyone a freebie gem by setting an origin location
+//Creates the Gems
 
 var Gem = function() {
     this.x = 202;
@@ -186,6 +174,7 @@ var Gem = function() {
     this.sprite = 'images/Gem Blue.png';
 }
 
+//creates a function that will choose a random location for the gem on the canvas
 Gem.prototype.randomizer = function() {
     var random = function(low, high) {
         var range = high - low + 1;
@@ -196,14 +185,18 @@ Gem.prototype.randomizer = function() {
     this.y = blocHeight * random(1,3);
 }
 
+//Makes sure the Gem class checks for collisions
 Gem.prototype.update = function() {
     this.collision(); 
 }
 
+//Determines the collision distance between player and gem
+//Calls the radomizer function to place the gem on random locations
+//Adds ten points to the player.score 
+//Replaces the old score with the new score 
 Gem.prototype.collision = function() {
     if (player.x < this.x + 65 && player.x + 65 > this.x && player.y < this.y + 30 && 30 + player.y > this.y) {
       this.randomizer();
-      var newScore = [];
       
       player.score += 10;
       document.getElementById("score").innerHTML = player.score;
@@ -211,6 +204,7 @@ Gem.prototype.collision = function() {
     };
 }
 
+//Creates the gems on the canvas
 Gem.prototype.render = function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
 }
